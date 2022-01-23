@@ -1,1 +1,2 @@
-from .map_base_class import SingleMapField
+from .map_base_class import SingleMapClass
+from .map_nested_class import NestedMapClass

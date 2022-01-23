@@ -1,6 +1,6 @@
 from ..fields import FieldBase
 
-class SingleMapField:
+class SingleMapClass:
 
     def __init__(self) -> None:
         self.errors = []
