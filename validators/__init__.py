@@ -1,3 +1,6 @@
-from .validate_regex import ValidatorRegExp
-from .validate_in_choices import ValidateChoices
-from .validator_is_close import ValidateIsClose
+from .validators import (
+    ValidateChoices,
+    ValidatorBase,
+    ValidatorRegExp,
+    ValidateIsClose
+)
