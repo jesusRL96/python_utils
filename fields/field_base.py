@@ -5,7 +5,7 @@ from typing import Any, List, Dict
 
 @dataclass
 class FieldBase:
-    name: str
+    key_name: str
     alias: str = None
     value: Any = None
     validators: List = field(default_factory=list, repr=False)
@@ -15,7 +15,7 @@ class FieldBase:
     errors: List = field(init=False, repr=False, default_factory=list)
 
     def __post_init__(self):
-        self.alias = self.alias if bool(self.alias) else self.name
+        self.alias = self.alias if bool(self.alias) else self.key_name
 
     def value_parse(self):
         self.value = self.value
@@ -27,9 +27,9 @@ class FieldBase:
     def is_valid(self):
         if self.value_from_dict:
             assert self.mapping_dict and isinstance(self.mapping_dict,dict), 'Dictionary is required to validate data'
-            value_in_dict = self.name in self.mapping_dict.keys()
+            value_in_dict = self.key_name in self.mapping_dict.keys()
             self.set_error(not value_in_dict, f'the field {self.alias} is not in the dictionary')
-            self.value = self.mapping_dict.get(self.name)
+            self.value = self.mapping_dict.get(self.key_name)
         
         val_required = self.required and not bool(self.value)
         self.set_error(val_required, f'the field {self.alias} is required')

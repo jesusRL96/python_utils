@@ -1,0 +1,1 @@
+from .map_base_class import SingleMapField
