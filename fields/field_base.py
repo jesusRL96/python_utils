@@ -25,7 +25,7 @@ class FieldBase:
         assert isinstance(self.value, data_type), 'Data type does not match'
     
     def is_valid(self):
-        if self.value_from_dict and self.required:
+        if self.value_from_dict:
             assert self.mapping_dict and isinstance(self.mapping_dict,dict), 'Dictionary is required to validate data'
             value_in_dict = self.name in self.mapping_dict.keys()
             self.set_error(not value_in_dict, f'the field {self.alias} is not in the dictionary')
