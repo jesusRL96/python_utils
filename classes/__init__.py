@@ -1,1 +1,1 @@
-from .map_base_classes import SingleMapClass, NestedMapClass
+from .map_base_classes import SingleMapClass, NestedMapClass, FromDictClass
