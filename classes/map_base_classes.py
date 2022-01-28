@@ -1,5 +1,5 @@
 from ..fields import *
-from ..validators import QueryValidators
+from ..validators import *
 from ..functions import nest_dict, flatten_dict, unflatten_dictionary
 from functools import reduce
 import re
@@ -22,14 +22,15 @@ class SingleMapClass:
         # iterate over field attributes
         for field in self.fields:
             field.is_valid()
-            self.errors = self.errors if field.is_valid() else [*self.errors, {field.alias:field.errors}]
+            field_index = f"{str(field.dict_index)+'|' if bool(field.dict_index) else ''}{field.alias}"
+            self.errors = self.errors if field.is_valid() else [*self.errors, {field_index:field.errors}]
         return not bool(self.errors)
 
 
 class NestedMapClass(SingleMapClass):
 
     def __init__(self) -> None:
-        super().__init__()  
+        super().__init__()
         self.map_classes = [y for x in dir(self) if isinstance((y := getattr(self,x)),SingleMapClass)]
         self.map_class_errors = []
 
@@ -58,13 +59,13 @@ class FromDictClass(SingleMapClass):
     def create_field(self, flat_index, value):
         # clear index list
         index_list = flat_index.split('|')
-        index_list = [re.sub(r'\[\d\]', '',x) for x in index_list]
-        print(index_list)
+        index_list = [re.sub(r'\[\d+\]', '',x) for x in index_list]
+        # print(index_list)
         field_validations = self.deep_get(self.validation_dict, *index_list)
         field_validations = field_validations if isinstance(field_validations, dict) else {}
         field = None
-        
-        
+
+
         if bool(field_validations) or self.validate_full_node:
             type = field_validations.get("type", "FieldString")
             field_validators = field_validations.get("validators",[])
@@ -104,11 +105,18 @@ class FromDictClass(SingleMapClass):
 
     def serialize_fields(self, nodo="", clean_chars=None):
         nodo = f'{nodo}|' if bool(nodo) else ''
+        serialize_rules = self.validation_dict.get('serialize_rules',{})
+        show_as_list = [k for k,v in serialize_rules.items() if isinstance(v,dict) and v.get('as_list', False) ]
         dict_fields = {}
         for field in self.fields:
             field_index = f"{nodo}{str(field.dict_index)+'|' if bool(field.dict_index) else ''}{field.alias}"
             # clean char using regular expressions
             field_index = re.sub(clean_chars, '', field_index) if bool(clean_chars) else field_index
+            clean_field_index = re.sub(r'\[\d+\]', '', field_index)
+            for nodo_as_list in show_as_list:
+                nodo_esc = nodo_as_list.replace("|", "\|")
+                if not re.match(rf'.*{nodo_esc}\[\d+\].*', field_index) and nodo_as_list in clean_field_index:
+                    field_index = field_index.replace(nodo_as_list, f'{nodo_as_list}[0]')
             dict_fields[field_index] = field.value
         nested_dict = nest_dict(dict_fields, split='|')
         nested_dict = unflatten_dictionary(nested_dict, '|')
