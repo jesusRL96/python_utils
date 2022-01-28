@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from decimal import Decimal
 from .field_base import FieldBase
 
 @dataclass
@@ -15,3 +16,10 @@ class FieldInt(FieldBase):
 
     def value_parse(self):
         self.value = int(self.value)
+
+@dataclass
+class FieldDecimal(FieldBase):
+    value: Decimal = None  
+
+    def value_parse(self):
+        self.value = Decimal(str(self.value))

@@ -1,6 +1,8 @@
 from ..fields import *
 from ..validators import QueryValidators
 from ..functions import nest_dict, flatten_dict, unflatten_dictionary
+from functools import reduce
+import re
 
 class SingleMapClass:
 
@@ -54,9 +56,15 @@ class FromDictClass(SingleMapClass):
                 self.fields.append(field)
 
     def create_field(self, flat_index, value):
-        field_validations = self.validation_dict.get(flat_index,{})
-        # print(flat_index)
+        # clear index list
+        index_list = flat_index.split('|')
+        index_list = [re.sub(r'\[\d\]', '',x) for x in index_list]
+        print(index_list)
+        field_validations = self.deep_get(self.validation_dict, *index_list)
+        field_validations = field_validations if isinstance(field_validations, dict) else {}
         field = None
+        
+        
         if bool(field_validations) or self.validate_full_node:
             type = field_validations.get("type", "FieldString")
             field_validators = field_validations.get("validators",[])
@@ -91,8 +99,17 @@ class FromDictClass(SingleMapClass):
             field = eval(f'{type}')(**kwargs)
         return field
 
-    def serialize_fields(self, nodo=""):
+    def deep_get(self, dictionary, *keys):
+        return reduce(lambda d, key: d.get(key) if d else None, keys, dictionary)
+
+    def serialize_fields(self, nodo="", clean_chars=None):
         nodo = f'{nodo}|' if bool(nodo) else ''
-        dict_fields = {f"{nodo}{str(x.dict_index)+'|' if bool(x.dict_index) else ''}{x.alias}":x.value for x in self.fields}
-        nested_dict = unflatten_dictionary(dict_fields, '|')
+        dict_fields = {}
+        for field in self.fields:
+            field_index = f"{nodo}{str(field.dict_index)+'|' if bool(field.dict_index) else ''}{field.alias}"
+            # clean char using regular expressions
+            field_index = re.sub(clean_chars, '', field_index) if bool(clean_chars) else field_index
+            dict_fields[field_index] = field.value
+        nested_dict = nest_dict(dict_fields, split='|')
+        nested_dict = unflatten_dictionary(nested_dict, '|')
         return nested_dict
