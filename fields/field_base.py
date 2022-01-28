@@ -11,6 +11,7 @@ class FieldBase:
     validators: List = field(default_factory=list, repr=False)
     required: bool = True
     value_from_dict: bool = True
+    dict_index: str = field(repr=False, default="")
     mapping_dict: Dict = field(default_factory=dict, repr=False)
     errors: List = field(init=False, repr=False, default_factory=list)
 
