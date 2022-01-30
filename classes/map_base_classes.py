@@ -1,6 +1,6 @@
 from ..fields import *
 from ..validators import *
-from ..functions import nest_dict, flatten_dict, unflatten_dictionary
+from ..functions import flatten_dict, nest_dict_function
 from functools import reduce
 import re
 
@@ -118,6 +118,5 @@ class FromDictClass(SingleMapClass):
                 if not re.match(rf'.*{nodo_esc}\[\d+\].*', field_index) and nodo_as_list in clean_field_index:
                     field_index = field_index.replace(nodo_as_list, f'{nodo_as_list}[0]')
             dict_fields[field_index] = field.value
-        nested_dict = nest_dict(dict_fields, split='|')
-        nested_dict = unflatten_dictionary(nested_dict, '|')
+        nested_dict = nest_dict_function(dict_fields, '|')
         return nested_dict

@@ -1,1 +1,1 @@
-from .dict_functions import flatten_dict, nest_dict, unflatten_dictionary
+from .dict_functions import flatten_dict, nest_dict_function
